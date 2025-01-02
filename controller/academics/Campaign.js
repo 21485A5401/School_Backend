@@ -63,10 +63,10 @@ exports.sendMessage = async (req, res) => {
             // Send messages in chunks
             const studentPromises = studentChunks.map(chunk =>
                 Promise.all(chunk.map(student => {
-                    if (student.phonenumber) {
+                    if (student.whatsappNumber) {
                         return sendWhatsappMessage({
                             messaging_product: "whatsapp",
-                            to: student.phonenumber,
+                            to: student.whatsappNumber,
                             type: "text",
                             text: { body: studentMessage },
                         });

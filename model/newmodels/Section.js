@@ -6,9 +6,6 @@ const SectionSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        description: {
-            type: String,
-        },
         createdBy: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Admin",
@@ -16,14 +13,17 @@ const SectionSchema = new mongoose.Schema(
         },
         students: [
             {
-                type: Schema.Types.ObjectId,
-                ref: "Student",
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "newStudent",
             },
         ]
+    },
+    {
+        timestamps: true
     }
 )
 
-const Section = mongoose.model('Section',SectionSchema);
+const Section = mongoose.model('newSection', SectionSchema);
 
 module.exports = Section;
 

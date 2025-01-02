@@ -43,17 +43,18 @@ exports.loginSchoolAdmin = AysncHandler(async (req, res) => {
     const school = await SchoolAdmin.findOne({ email });
     //find school Admin
     if (!school) {
-        return res.json({ message: "Invalid login credentials" });
+        return res.json({ success:false,message: "Invalid login credentials" });
     }
     //verify the password
     const isMatched = await isPassMatched(password, school?.password);
     if (!isMatched) {
-        return res.json({ message: "Invalid login crendentials" });
+        return res.json({ success:false,message: "Invalid login crendentials" });
     } else {
         return res.json({
             data: generateToken(school._id),
             message: "School Admin logged in successfully",
-            Role : school.role
+            Role : school.role,
+            success:true
         });
     }
 })

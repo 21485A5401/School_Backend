@@ -9,26 +9,21 @@ const { hashPassword, isPassMatched } = require("../../utils/helpers");
 //@route POST /api/admins/register
 //@acess  Private
 exports.registerAdmCtrl = AysncHandler(async (req, res) => {
-  const { superintendentname, email,location,branchname,address,phonenumber,gender,qualification,experience } = req.body;
+  const { name, email, address, phonenumber, password } = req.body;
   //Check if email exists
   const adminFound = await Admin.findOne({ email });
   if (adminFound) {
-    throw new Error("Admin Exists");
+    return res.status(400).json({ status: 'false', message: "Admin Already Exist" });
   }
 
   //register
   const user = await Admin.create({
-    superintendentname,
+    name,
     email,
-    location,
-    branchname,
     address,
     phonenumber,
-    gender,
-    qualification,
-    experience,
-    password: await hashPassword("12345678"),
-    createdBy:req?.userAuth?._id
+    password: await hashPassword(password),
+    createdBy: req?.userAuth?._id
   });
   res.status(201).json({
     status: "success",
@@ -36,6 +31,61 @@ exports.registerAdmCtrl = AysncHandler(async (req, res) => {
     message: "Admin registered successfully",
   });
 });
+
+exports.updateAdmCtrl = AysncHandler(async (req, res) => {
+  const { name, email, address, phonenumber } = req.body;
+  const adminId = req.query.id;
+  //Check if email exists
+  console.log(adminId);
+
+  const adminFound = await Admin.findOne({ _id: adminId });
+  if (!adminFound) {
+    return res.status(400).json({ status: 'false', message: "Admin Not Found" });
+  }
+
+  adminFound.name = name || adminFound.name;
+  adminFound.email = email || adminFound.email;
+  adminFound.address = address || adminFound.address;
+  adminFound.phonenumber = phonenumber || adminFound.phonenumber;
+  adminFound.save();
+  //register
+  // const user = await Admin.findByIdAndUpdate({ adminId }, {
+  //   name,
+  //   email,
+  //   address,
+  //   phonenumber,
+  // }, { new: true });
+  res.status(200).json({
+    success: true,
+    data: adminFound,
+    message: "Admin Updated successfully",
+  });
+});
+
+exports.updateToagleAdmCtrl = AysncHandler(async (req, res) => {
+  const adminId = req.query.id;
+  //Check if email exists
+  const adminFound = await Admin.findOne({ _id: adminId });
+  if (!adminFound) {
+    return res.status(400).json({ status: 'false', message: "Admin Not Found" });
+  }
+
+  adminFound.status = !adminFound.status;
+  adminFound.save();
+  //register
+  // const user = await Admin.findByIdAndUpdate({ adminId }, {
+  //   name,
+  //   email,
+  //   address,
+  //   phonenumber,
+  // }, { new: true });
+  res.status(200).json({
+    success: true,
+    data: adminFound,
+    message: "Admin status Updated successfully",
+  });
+});
+
 //@desc     login admins
 //@route    POST /api/v1/admins/login
 //@access   Private
@@ -44,18 +94,22 @@ exports.loginAdminCtrl = AysncHandler(async (req, res) => {
   //find user
   const user = await Admin.findOne({ email });
   if (!user) {
-    return res.json({ message: "Invalid login crendentials" });
+    return res.json({ success: false, message: "Invalid login crendentials" });
+  }
+  if (user.status === false) {
+    return res.json({ success: false, message: "Admin is Inactive, Please Contact SuperAdmin" });
   }
   //verify password
   const isMatched = await isPassMatched(password, user.password);
 
   if (!isMatched) {
-    return res.status(400).json({ message: "Invalid login crendentials" });
+    return res.status(400).json({ success: false, message: "Invalid login crendentials" });
   } else {
     return res.json({
       data: generateToken(user._id),
       message: "Admin logged in successfully",
-      Role : user.role
+      Role: user.role,
+      success: true
     });
   }
 });
@@ -71,7 +125,7 @@ exports.getAdminsCtrl = AysncHandler(async (req, res) => {
   // }
   const admins = await Admin.find();
   const filteredAdmins = admins.filter(admin => admin.createdBy.toString() === schooladmin.toString());
-  if(filteredAdmins.length > 0) {
+  if (filteredAdmins.length > 0) {
     res.status(200).json({
       status: "success",
       message: "Admins fetched successfully",
