@@ -1,5 +1,5 @@
 const Classes = require("../../model/newmodels/classes");
-const Section = require("../../model/newmodels/section");
+const Section = require("../../model/newmodels/Section");
 const newStudent = require("../../model/newmodels/Student");
 
 // class APIs
