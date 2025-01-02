@@ -19,4 +19,5 @@ newRouter.put("/updateSection", isLogin, isAdmin, updateSection);
 newRouter.post("/addStudent", isLogin, isAdmin, addStudent);
 newRouter.get("/getStudents", isLogin, isAdmin, getStudents);
 
+
 module.exports = newRouter;
