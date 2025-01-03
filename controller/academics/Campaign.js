@@ -1,5 +1,6 @@
 const ClassLevel = require("../../model/Academic/ClassLevel");
 const Student = require("../../model/Academic/Student");
+const Admin = require("../../model/Staff/Admin");
 const Teacher = require("../../model/Staff/Teacher");
 const axios = require('axios');
 require('dotenv').config();
@@ -17,6 +18,36 @@ const sendWhatsappMessage = async (data) => {
     };
 
     return axios(config);
+};
+
+const prepareTestTemplate = ({recipient, name, sampleMessage, schoolName}) => {
+    
+    if (!name || !sampleMessage || !schoolName) {
+        throw new Error("All parameters (name, sampleMessage, schoolName) must be provided");
+    }
+
+    const data = {
+        "messaging_product": "whatsapp",
+        "to": recipient,
+        "type": "template",
+        "template": {
+            "name": "custom_message",
+            "language": {
+                "code": "en"
+            },
+            "components": [
+                {
+                    "type": "body",
+                    "parameters": [
+                        { "type": "text", "text": name },
+                        { "type": "text", "text": sampleMessage },
+                        { "type": "text", "text": schoolName }
+                    ]
+                }
+            ]
+        }
+    };
+    return JSON.stringify(data);
 };
 
 
@@ -43,7 +74,11 @@ const sendWhatsappMessage = async (data) => {
 exports.sendMessage = async (req, res) => {
     try {
         const { students, teachers, studentMessage, teacherMessage } = req.body;
-
+        const adminId = req.userAuth._id;
+        const AdminData = await Admin.findById(adminId);
+        if (!AdminData) {
+            return res.status(404).json({ success: false, message: "Admin not found" });
+        }
         // Sending messages to students
         if (studentMessage) {
             // const studentData = await Student.find({ classLevels: classId });
@@ -64,12 +99,13 @@ exports.sendMessage = async (req, res) => {
             const studentPromises = studentChunks.map(chunk =>
                 Promise.all(chunk.map(student => {
                     if (student.whatsappNumber) {
-                        return sendWhatsappMessage({
-                            messaging_product: "whatsapp",
-                            to: student.whatsappNumber,
-                            type: "text",
-                            text: { body: studentMessage },
+                        const prepareSchema = prepareTestTemplate({
+                            recipient: student.whatsappNumber,
+                            name: student.name,
+                            sampleMessage: studentMessage,
+                            schoolName: AdminData.name
                         });
+                        sendWhatsappMessage(prepareSchema);
                     }
                 }))
             );
@@ -78,7 +114,7 @@ exports.sendMessage = async (req, res) => {
                 // console.log(`Response from promise ${index}:`, res);
             });
             // console.log(response);
-            
+
         }
 
         // Sending messages to teachers

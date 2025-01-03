@@ -10,8 +10,8 @@ const campaignRouter = express.Router();
 // academicTerRouter.get("/", isLogin, isAdmin, getAcademicYears);
 
 campaignRouter.post("/sendMessage",
-    // isLogin,
-    // isAdmin,
+    isLogin,
+    isAdmin,
     sendMessage);
 
 module.exports = campaignRouter;
