@@ -1,5 +1,6 @@
 const Classes = require("../../model/newmodels/classes");
 const Section = require("../../model/newmodels/Section");
+const sentMessages = require("../../model/newmodels/sentMessages");
 const newStudent = require("../../model/newmodels/Student");
 
 // class APIs
@@ -209,6 +210,18 @@ exports.getStudents = async (req, res) => {
             students = await newStudent.find({ createdBy: adminId });
         }
         return res.status(200).json({ success: true, data: students });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error);
+    }
+}
+
+exports.getMessages = async (req, res) => {
+    try {
+        const adminId = req.userAuth._id;
+        const messages = await sentMessages.find({ createdBy: adminId });
+
+        return res.status(200).json({ success: true, data: messages });
     } catch (error) {
         console.log(error);
         return res.status(500).json(error);

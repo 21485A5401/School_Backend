@@ -1,5 +1,6 @@
 const ClassLevel = require("../../model/Academic/ClassLevel");
 const Student = require("../../model/Academic/Student");
+const sentMessages = require("../../model/newmodels/sentMessages");
 const Admin = require("../../model/Staff/Admin");
 const Teacher = require("../../model/Staff/Teacher");
 const axios = require('axios');
@@ -20,8 +21,8 @@ const sendWhatsappMessage = async (data) => {
     return axios(config);
 };
 
-const prepareTestTemplate = ({recipient, name, sampleMessage, schoolName}) => {
-    
+const prepareTestTemplate = ({ recipient, name, sampleMessage, schoolName }) => {
+
     if (!name || !sampleMessage || !schoolName) {
         throw new Error("All parameters (name, sampleMessage, schoolName) must be provided");
     }
@@ -114,7 +115,7 @@ exports.sendMessage = async (req, res) => {
                 // console.log(`Response from promise ${index}:`, res);
             });
             // console.log(response);
-
+            await sentMessages({ textMessage: studentMessage, count: studentData.length, createdBy: adminId });
         }
 
         // Sending messages to teachers
