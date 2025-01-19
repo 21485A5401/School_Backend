@@ -115,7 +115,7 @@ exports.sendMessage = async (req, res) => {
                 // console.log(`Response from promise ${index}:`, res);
             });
             // console.log(response);
-            await sentMessages({ textMessage: studentMessage, count: studentData.length, createdBy: adminId });
+            await sentMessages.create({ textMessage: studentMessage, count: studentData.length, createdBy: adminId });
         }
 
         // Sending messages to teachers
