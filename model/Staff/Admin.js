@@ -33,6 +33,10 @@ const adminSchema = new mongoose.Schema(
     status: {
       type: Boolean,
       default: true
+    },
+    logo:{
+      type:String,
+      required:false
     }
   },
   {

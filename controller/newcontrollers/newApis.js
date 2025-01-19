@@ -2,6 +2,7 @@ const Classes = require("../../model/newmodels/classes");
 const Section = require("../../model/newmodels/Section");
 const sentMessages = require("../../model/newmodels/sentMessages");
 const newStudent = require("../../model/newmodels/Student");
+const Admin = require("../../model/Staff/Admin");
 
 // class APIs
 
@@ -198,6 +199,31 @@ exports.addStudent = async (req, res) => {
         return res.status(500).json(error);
     }
 }
+exports.updateStudent = async (req, res) => {
+    try {
+        const { name, rollno, fatherName, whatsappNumber, gender } = req.body;
+        const { studentId } = req.params;
+        console.log(studentId);
+
+        await newStudent.findByIdAndUpdate(
+            { _id: studentId },
+            {
+                $set: {
+                    name,
+                    rollno,
+                    fatherName,
+                    whatsappNumber,
+                    gender
+                }
+            },
+            { new: true }
+        );
+        return res.status(200).json({ success: true, message: "student details updated successfully" });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error);
+    }
+}
 
 exports.getStudents = async (req, res) => {
     try {
@@ -222,6 +248,17 @@ exports.getMessages = async (req, res) => {
         const messages = await sentMessages.find({ createdBy: adminId });
 
         return res.status(200).json({ success: true, data: messages });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json(error);
+    }
+}
+exports.getAdminById = async (req, res) => {
+    try {
+        const adminId = req.userAuth._id;
+        const admin = await Admin.findById(adminId);
+
+        return res.status(200).json({ success: true, admin });
     } catch (error) {
         console.log(error);
         return res.status(500).json(error);

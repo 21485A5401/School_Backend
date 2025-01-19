@@ -4,6 +4,9 @@ const Admin = require("../../model/Staff/Admin");
 const generateToken = require("../../utils/generateToken");
 const verifyToken = require("../../utils/verifyToken");
 const { hashPassword, isPassMatched } = require("../../utils/helpers");
+require('dotenv').config();
+const fs = require("fs");
+const path = require("path");
 
 //@desc Register admin
 //@route POST /api/admins/register
@@ -15,6 +18,7 @@ exports.registerAdmCtrl = AysncHandler(async (req, res) => {
   if (adminFound) {
     return res.status(400).json({ status: 'false', message: "Admin Already Exist" });
   }
+  const fileUrl = req.file?.filename ? `${process.env.DOMAIN_URL}/api/v1/newrouts/schoollogo/${req.file?.filename}` : null;
 
   //register
   const user = await Admin.create({
@@ -23,7 +27,8 @@ exports.registerAdmCtrl = AysncHandler(async (req, res) => {
     address,
     phonenumber,
     password: await hashPassword(password),
-    createdBy: req?.userAuth?._id
+    createdBy: req?.userAuth?._id,
+    logo: fileUrl
   });
   res.status(201).json({
     status: "success",
@@ -47,6 +52,26 @@ exports.updateAdmCtrl = AysncHandler(async (req, res) => {
   adminFound.email = email || adminFound.email;
   adminFound.address = address || adminFound.address;
   adminFound.phonenumber = phonenumber || adminFound.phonenumber;
+  if (req.file?.filename) {
+    const oldLogo = adminFound.logo;
+
+    if (oldLogo) {
+      const oldLogoPath = path.join(__dirname, "..", "..", "public", "upload", path.basename(oldLogo));
+      fs.unlink(oldLogoPath, (err) => {
+        if (err) {
+          console.error("Error deleting old logo:", err.message);
+        } else {
+          console.log("Old logo successfully deleted.");
+        }
+      });
+    }
+
+    adminFound.logo = `${process.env.DOMAIN_URL}/api/v1/newrouts/schoollogo/${req.file.filename}`;
+  } else {
+    adminFound.logo = adminFound.logo;
+  }
+  console.log(adminFound);
+
   adminFound.save();
   //register
   // const user = await Admin.findByIdAndUpdate({ adminId }, {
